@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+	<meta charset="utf-8">
+	<title>Web Speech API Demo</title>
+	<script defer src="https://code.getmdl.io/1.1.0/material.min.js"></script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+
+
+	<style>
+		body {
+			background-color: #fafafa;
+		}
+
+		a:link {
+			color:#000;
+			text-decoration: none;
+		}
+
+		a:visited {
+			color:#000;
+		}
+
+		a:hover {
+			color:#33F;
+		}
+
+		.button {
+			background: -webkit-linear-gradient(top,#008dfd 0,#0370ea 100%);
+			border: 1px solid #076bd2;
+			border-radius: 3px;
+			color: #fff;
+			display: none;
+			font-size: 13px;
+			font-weight: bold;
+			line-height: 1.3;
+			padding: 8px 25px;
+			text-align: center;
+			text-shadow: 1px 1px 1px #076bd2;
+			letter-spacing: normal;
+		}
+
+		.center {
+			padding: 10px;
+			text-align: center;
+		}
+
+		.final {
+			color: black;
+			/*padding-right: 3px;*/ 
+		}
+
+		.interim {
+			color: gray;
+		}
+
+		.info {
+			font-size: 14px;
+			text-align: center;
+			color: #777;
+			display: none;
+		}
+
+		.right {
+			float: right;
+		}
+
+		.sidebyside {
+			display: inline-block;
+			width: 45%;
+			min-height: 40px;
+			text-align: left;
+			vertical-align: top;
+		}
+
+		#headline {
+			font-size: 40px;
+			font-weight: 300;
+		}
+
+		#info {
+			font-size: 20px;
+			text-align: center;
+			color: #777;
+			visibility: hidden;
+		}
+
+		#results {
+			font-size: 16px;
+			font-weight: bold;
+			text-align: left;
+
+		}
+
+		#start_button, #clear_button {
+			border: 0;
+			background-color:transparent;
+			padding: 0;
+		}
+
+		.demo-card-wide.mdl-card {
+			margin-top: 100px;
+		 	width: 70%;
+		 	margin: auto; 
+		}
+
+		.demo-card-wide > .mdl-card__title {
+			color: #fff;
+			height: 176px;
+			background: url('http://walkthechat.com/wp-content/uploads/2015/02/voice-recognition.jpg') center / cover;
+			padding: 0;
+		}
+
+		.mdl-card__title-text {
+			background: -webkit-linear-gradient(bottom, rgba(0,0,0,0), rgba(0,0,0,1)); /* For Safari 5.1 to 6.0 */
+		    background: -o-linear-gradient(bottom, rgba(0,0,0,0), rgba(0,0,0,1)); /* For Opera 11.1 to 12.0 */
+		    background: -moz-linear-gradient(bottom, rgba(0,0,0,0), rgba(0,0,0,1)); /* For Firefox 3.6 to 15 */
+		    background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1)); /* Standard syntax (must be last) */
+			
+			width: 100%;
+			bottom: 0;
+		    left: 0;
+		    padding-left: 16px;
+		    padding-top: 20px;
+		    padding-bottom: 16px;
+		}
+
+		.mdl-button {
+			margin: 5px 5px 5px 0;
+		}
+
+		.demo-card-wide > .mdl-card__menu {
+			color: #fff;
+		}
+
+		.mdl-card__supporting-text{
+			border-top: 1px solid rgba(0,0,0,.1);
+    		width: unset !important;
+    	}
+
+	</style>
+
+	<link rel="stylesheet" href="https://code.getmdl.io/1.1.0/material.blue_grey-indigo.min.css" />
+</head>
+
+
+<body>
+	<h1 class="center" id="headline">Web Speech API Demonstration</h1>
+
+	<div id="info">
+		<p id="info_start">Click on the microphone icon and begin speaking.</p>
+
+		<p id="info_speak_now">Speak now.</p>
+
+		<p id="info_no_speech">No speech was detected. You may need to adjust your <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892"> microphone settings</a>.</p>
+
+		<p id="info_no_microphone" style="display:none">
+			No microphone was found. Ensure that a microphone is installed and that <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892"> microphone settings</a> are configured correctly.
+		</p>
+
+		<p id="info_allow">Click the "Allow" button above to enable your microphone.</p>
+
+		<p id="info_denied">Permission to use microphone was denied.</p>
+
+		<p id="info_blocked">Permission to use microphone is blocked. To change, go to chrome://settings/contentExceptions#media-stream</p>
+
+		<p id="info_upgrade">Web Speech API is not supported by this browser. Upgrade to <a href="//www.google.com/chrome">Chrome</a> version 25 or later.</p>
+
+	</div>
+
+	<div class="demo-card-wide mdl-card mdl-shadow--2dp" id="dictation_card" style="display:none">
+	  <div class="mdl-card__title">
+	    <h2 class="mdl-card__title-text">Speech recognition results</h2>
+	  </div>
+	  <div class="mdl-card__actions mdl-card--border">
+	    <div id="punctuationBar" class="center">
+			<p style="text-align:center;">Click or speak the following punctuation marks, to append to dictation results:</p>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('.')" title="Click to insert" id="cell_period" style="font-size: 2em;vertical-align: top;">.</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol(',')" title="Click to insert" id="cell_comma" style="font-size: 2em;vertical-align: top;">,</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('?')" title="Click to insert" id="cell_question" style="font-size: 2em;vertical-align: top;">?</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol(':')" title="Click to insert" id="cell_colon" style="font-size: 2em;vertical-align: top;">:</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol(';')" title="Click to insert" id="cell_semi" style="font-size: 2em;vertical-align: top;">;</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('!')" title="Click to insert" id="cell_exclamation" style="font-size: 2em;vertical-align: top;">!</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('-')" title="Click to insert" id="cell_dash" style="font-size: 2em;vertical-align: top;">-</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('<br>')" title="Click to insert" id="cell_line" style="font-size: 2em;vertical-align: top;">&crarr;</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('<p></p>')" title="Click to insert" id="cell_paragraph" style="font-size: 2em;vertical-align: top;">&crarr;&crarr;</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('(')" title="Click to insert" id="cell_open" style="font-size: 2em;vertical-align: top;">(</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol(')')" title="Click to insert" id="cell_close" style="font-size: 2em;vertical-align: top;">)</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('&#128515;')" title="Click to insert" id="cell_smiley" style="font-size: 2em;vertical-align: top;">&#128515;</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('&#128542;')" title="Click to insert" id="cell_sad" style="font-size: 2em;vertical-align: top;">&#128542;</button>
+		 </div> 
+
+	  </div>
+	  <div class="mdl-card__supporting-text" id="results">
+	    <span contenteditable="true" id="final_span" class="final" onkeyup="populateStorage()"></span>
+	  	<span id="interim_span" class="interim"></span>
+	  </div>
+	  <div class="mdl-card__actions mdl-card--border">
+	    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="start_button" onclick="startButton(event)">
+			Start
+		</button>
+		<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="clear_button" onclick="clearButton()">
+			Clear
+		</button>
+	  </div>
+	</div>
+
+	<dialog id="dialog" class="mdl-dialog">
+	  	<h3 class="mdl-dialog__title">Demande d'aide</h3>
+	  	<div class="mdl-dialog__content">
+	    	<p>
+	      		Un client souhaite disposer de l'aide pour les malentendants.
+	    	</p>
+	  	</div>
+	  	<div class="mdl-dialog__actions">
+	    	<button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">D'accord</button>
+		</div>
+	</dialog>
+
+	<!--
+	<div id="results">
+	  <span id="final_span" class="final"></span>
+	  <span id="interim_span" class="interim"></span>
+	  <p>
+	</div>
+	-->
+
+</body>
+
+<script type="text/javascript">
+
+	// dialog window variable to avoid to type it multiple times
+	var dialog = document.querySelector('#dialog');
+
+	localStorage.setItem('need_transcript', 'false');	//TODO: delete this line: debug mode
+	
+	//Start with indication to know how to use the program
+	showInfo('info_start');
+
+	//if the browser have the speech recognition capability, then use it and start the program
+	if ('webkitSpeechRecognition' in window) {
+
+		//init
+		var final_transcript = '';
+		var final_transcript_save = '';
+		var recognizing = false;
+		var ignore_onend;
+		var start_timestamp;
+		start_button.style.display = 'inline-block';
+		var recognition = new webkitSpeechRecognition();
+		recognition.continuous = true;
+		recognition.interimResults = true;
+
+
+		//The start event is fired when the recognition service has begun to listen to the audio with the intention of recognizing.
+		recognition.onstart = function() {
+		    recognizing = true;
+		    showInfo('info_speak_now');
+		    //start_img.src = 'mic-animate.gif';
+		    start_button.innerHTML = 'Stop';
+		    final_transcript = final_transcript_save;
+		    final_transcript_save = '';
+		};
+
+		//The error event is fired when a speech recognition error occurs. The event must use the SpeechRecognitionError interface.
+		recognition.onerror = function(event) {
+			if (event.error == 'no-speech') {
+				//start_img.src = 'mic.gif';
+				start_button.innerHTML = 'Start';
+				showInfo('info_no_speech');
+				ignore_onend = true;
+			}
+			if (event.error == 'audio-capture') {
+				//start_img.src = 'mic.gif';
+				start_button.innerHTML = 'Start';
+				showInfo('info_no_microphone');
+				ignore_onend = true;
+			}
+			
+			if (event.error == 'not-allowed') {
+				if (event.timeStamp - start_timestamp < 100) {
+			  		showInfo('info_blocked');
+			  	} else {
+			    	showInfo('info_denied');
+			  	}
+			  	ignore_onend = true;
+			}
+			
+		};
+
+		//The end event is fired when the service has disconnected. The event must always be generated when the session ends no matter the reason for the end.
+		recognition.onend = function() {
+		    recognizing = false;
+		    if (ignore_onend) {
+		      	return;
+		    }
+		    //start_img.src = 'mic.gif';
+		    start_button.innerHTML = 'Start';
+		    
+		    if (!final_transcript) {
+		     	showInfo('info_start');
+		      	return;
+		    }
+		    
+		    showInfo('');
+		    
+		    final_transcript_save = final_span.innerHTML + ' ';
+		    console.log('final_transcript_save: ' + final_transcript_save);
+		    /*
+		    if (window.getSelection) {
+		      	window.getSelection().removeAllRanges();
+		      	var range = document.createRange();
+		      	range.selectNode(document.getElementById('final_span'));
+		      	window.getSelection().addRange(range);
+		    }
+			*/
+		    /*
+		    if (create_email) {
+		      	create_email = false;
+		      	createEmail();
+		    }
+		    */
+		};
+
+		//The result event is fired when the speech recognizer returns a result. The event must use the SpeechRecognitionEvent interface.
+		recognition.onresult = function(event) {
+			var interim_transcript = '';
+			for (var i = event.resultIndex; i < event.results.length; ++i) {
+				if (event.results[i].isFinal) {
+					final_transcript += event.results[i][0].transcript;
+				} else {
+					interim_transcript += event.results[i][0].transcript;
+				}
+			}
+			//console.log(event);
+			final_transcript = capitalize(final_transcript);
+
+			final_span.innerHTML = final_transcript_save + linebreak(final_transcript);
+
+			interim_span.innerHTML = linebreak(interim_transcript);
+
+			populateStorage();
+			/*
+			if (final_transcript || interim_transcript) {
+			  	showButtons('inline-block');
+			}
+			*/
+		};
+	}
+
+	/**
+	 * This function is used to transmit the speech transcription from the main window to the second window (hearing impaired window)
+	 */
+	function populateStorage() {
+		localStorage.setItem('final', document.getElementById('final_span').innerHTML);
+		localStorage.setItem('interim', document.getElementById('interim_span').innerHTML);
+	}
+
+
+	var two_line = /\n\n/g;
+	var one_line = /\n/g;
+
+	/**
+	 * Function to replace linebreaks with their HTML equivalents
+	 * @param  {String} s The string with linebreak not in HTML
+	 */
+	function linebreak(s) {
+	  	return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
+	}
+
+	var first_char = /\S/;
+
+	/**
+	 * Function used to capitalize the first character of the sentence
+	 */
+	function capitalize(s) {
+	  	return s.replace(first_char, function(m) { return m.toUpperCase(); });
+	}
+
+	/* Error informations functions */
+	function upgrade() {
+	  	start_button.style.visibility = 'hidden';
+	  	showInfo('info_upgrade');
+	}
+
+	/**
+	 * Display the good information according to the situation
+	 */
+	function showInfo(s) {
+		if (s) {
+			for (var child = info.firstChild; child; child = child.nextSibling) {
+			  	if (child.style) {
+			    	child.style.display = child.id == s ? 'inline' : 'none';
+			  	}	
+			}
+			info.style.visibility = 'visible';
+		} else {
+			info.style.visibility = 'hidden';
+		}
+	}
+
+	//TODO: Function used ??
+	var current_style;
+	function showButtons(style) {
+  		if (style == current_style) {
+    		return;
+  		}
+		current_style = style;
+		//copy_button.style.display = style;
+		//email_button.style.display = style;
+		//copy_info.style.display = 'none';
+		//email_info.style.display = 'none';
+	}
+
+	
+	/**
+	 * Insert the symbol "a" when the user press it
+	 */
+	function insertSymbol(a) {
+    	final_span.innerHTML += a;
+    	final_transcript = final_span.innerHTML;
+    	if (!recognizing) {final_transcript_save = final_transcript};
+    	console.log("final_span.innerHTML: " + final_span.innerHTML);
+    	console.log("final_transcript: " + final_transcript);
+    	console.log("final_transcript_save: " + final_transcript_save);
+    	populateStorage();
+
+	}
+
+	/**
+	 * Clear the content of the window when the clear button is pressed
+	 */
+	function clearButton () {
+		final_span.innerHTML = '';
+		interim_span.innerHTML = '';
+		final_transcript = '';
+		interim_transcript = '';
+		final_transcript_save = '';
+	}
+
+	/**
+	 * Start ou stop the recognition according to the status (recognizing or not)
+	 */
+	function startButton(event) {
+		if (recognizing) {
+			recognition.stop();
+			return;
+		}
+
+		final_transcript = '';
+		//recognition.lang = select_dialect.value;
+		recognition.lang = 'fr-FR';
+		recognition.start();
+		ignore_onend = false;
+		//final_span.innerHTML = '';
+		interim_span.innerHTML = '';
+		//start_img.src = 'mic-slash.gif';
+		start_button.innerHTML = 'Mic-slash';
+		showInfo('info_allow');
+		showButtons('none');
+		start_timestamp = event.timeStamp;
+	}
+
+	//Event listener to know when an user need a retranscription
+	window.addEventListener('storage', function(e) { 
+		console.log(e);
+		if (localStorage.getItem('need_transcript') == 'true') {
+			//alert("Un client souhaite disposer de l'aide pour les malentendants");
+			dialog.showModal();
+		};
+	});
+
+	//Manage the dialog window
+    if (!dialog.showModal) {
+      dialogPolyfill.registerDialog(dialog);
+    }
+    dialog.querySelector('button:not([disabled])').addEventListener('click', function() {
+    	dialog.close();
+      	document.getElementById('dictation_card').style.display = "flex";
+    });
+
+</script>
+
+</html>
