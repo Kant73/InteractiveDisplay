@@ -5,6 +5,7 @@
 	<meta charset="utf-8">
 	<title>Web Speech API Demo</title>
 	<script defer src="https://code.getmdl.io/1.1.0/material.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
 
 
@@ -156,7 +157,7 @@
 	    <h2 class="mdl-card__title-text">Speech recognition results</h2>
 	  </div>
 	  <div class="mdl-card__supporting-text" id="results">
-	    <span id="final_span" class="final"></span>
+	    <span id="final_span" class="final clickable"></span>
 	  	<span id="interim_span" class="interim"></span>
 	  </div>
 
@@ -221,6 +222,25 @@
 		document.getElementById('transcription_card').style.display = "flex";
 		document.getElementById('need_transcript').style.display = "none";
 	}
+
+
+	$(".clickable").click(function(e){
+		var s = window.getSelection();
+        s.modify('extend','backward','word');        
+        var b = s.toString();
+        console.log(s);
+
+        s.modify('extend','forward','word');
+        var a = s.toString();
+        console.log(s);
+        s.modify('move','forward','character');
+        //alert(b+a);
+		//alert(str);
+		console.log(b+a);
+		localStorage.setItem('need_correction', (b+a));
+	});
+
+
 </script>
 
 </html>

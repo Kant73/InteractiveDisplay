@@ -5,6 +5,7 @@
 	<meta charset="utf-8">
 	<title>Web Speech API Demo</title>
 	<script defer src="https://code.getmdl.io/1.1.0/material.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
 
 
@@ -275,6 +276,10 @@
 		</div>
 	</dialog>
 
+	<div id="snackbar-correction" class="mdl-js-snackbar mdl-snackbar">
+  		<div class="mdl-snackbar__text"></div>
+  		<button class="mdl-snackbar__action" type="button"></button>
+	</div>
 	<!--
 	<div id="results">
 	  <span id="final_span" class="final"></span>
@@ -295,6 +300,9 @@
 
 	// Dialog print button to show the dialog print window
 	var showDialogPrintButton = document.querySelector('#print_button');
+
+	//Snackbar print when a word need a correction
+	var snackbarContainer = document.querySelector('#snackbar-correction');
 
 	//localStorage.setItem('need_transcript', 'false');	//TODO: delete this line: debug mode
 	
@@ -396,6 +404,7 @@
 					final_transcript += event.results[i][0].transcript;
 				} else {
 					interim_transcript += event.results[i][0].transcript;
+					console.log(interim_transcript);
 				}
 			}
 			//console.log(event);
@@ -540,12 +549,23 @@
 	//Dialog to inform the host that someone need help
 	//
 	
-	//Event listener to know when an user need a retranscription
+	//Event listener to know when an user need a retranscription or a word need to be corrected
 	window.addEventListener('storage', function(e) { 
 		console.log(e);
 		if (localStorage.getItem('need_transcript') == 'true') {
 			//alert("Un client souhaite disposer de l'aide pour les malentendants");
 			dialog.showModal();
+			localStorage.setItem('need_transcript', 'false');
+		};
+		if (e.key == 'need_correction') {
+			//alert("Un client souhaite disposer de l'aide pour les malentendants");
+			'use strict';
+		    var data = {
+		      message: 'Le mot \"'+ e.newValue + '\" à besoin d\'être corrigé',
+		      timeout: 5000
+		    };
+		    snackbarContainer.MaterialSnackbar.showSnackbar(data);
+		    localStorage.removeItem('need_correction');
 		};
 	});
 
