@@ -139,6 +139,39 @@
     		width: unset !important;
     	}
 
+    	#dialog_print {
+    		width: 70%;
+    	}
+
+    	#dialog_print_textfield {
+    		width: 100%;
+    	}
+
+    	/*Media queries for history printing*/
+    	@media print {
+			body * {
+		    	visibility: hidden;
+		  	}
+		  
+		  	#dialog_print, #dialog_print * {
+		    	visibility: visible;
+		  	}
+		  	
+		  	#dialog_print {
+		  		position: absolute;
+			    left: 0;
+			    top: 0;
+		    	width: 100%;
+		  	}
+
+		  	.mdl-dialog__title {
+		  		text-align: center;
+		  	}
+
+		  	button {
+				visibility: hidden !important;		  	
+			}
+		}
 	</style>
 
 	<link rel="stylesheet" href="https://code.getmdl.io/1.1.0/material.blue_grey-indigo.min.css" />
@@ -173,6 +206,19 @@
 	  <div class="mdl-card__title">
 	    <h2 class="mdl-card__title-text">Speech recognition results</h2>
 	  </div>
+
+	  <div class="mdl-card__actions mdl-card--border">
+	  	<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="start_button" onclick="startButton(event)">
+			Start
+		</button>
+		<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="clear_button" onclick="clearButton()">
+			Clear
+		</button>
+	    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="print_button" onclick="">
+			Print the discussion
+		</button>
+	  </div>
+
 	  <div class="mdl-card__actions mdl-card--border">
 	    <div id="punctuationBar" class="center">
 			<p style="text-align:center;">Click or speak the following punctuation marks, to append to dictation results:</p>
@@ -196,14 +242,9 @@
 	    <span contenteditable="true" id="final_span" class="final" onkeyup="populateStorage()"></span>
 	  	<span id="interim_span" class="interim"></span>
 	  </div>
-	  <div class="mdl-card__actions mdl-card--border">
-	    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="start_button" onclick="startButton(event)">
-			Start
-		</button>
-		<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="clear_button" onclick="clearButton()">
-			Clear
-		</button>
-	  </div>
+	  <!-- <div class="mdl-card__actions mdl-card--border">
+	    
+	  </div> -->
 	</div>
 
 	<dialog id="dialog" class="mdl-dialog">
@@ -215,6 +256,22 @@
 	  	</div>
 	  	<div class="mdl-dialog__actions">
 	    	<button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">D'accord</button>
+		</div>
+	</dialog>
+
+	<!-- Print Dialog -->
+	<dialog id="dialog_print" class="mdl-dialog">
+	  	<h3 class="mdl-dialog__title">Impression de la retranscription</h3>
+	  	<div id="dialog_content" class="mdl-dialog__content">
+	    	<!-- <div id="dialog_print_textfield" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+				<textarea class="mdl-textfield__input" type="text" rows= "5" id="history_textarea" ></textarea>
+				<label class="mdl-textfield__label" for="sample5">Your conversation here</label>
+			</div> -->
+
+	  	</div>
+	  	<div class="mdl-dialog__actions">
+	    	<button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect print">Imprimer</button>
+	    	<button type="button" class="mdl-button close mdl-js-button mdl-button--raised mdl-js-ripple-effect">Annuler</button>
 		</div>
 	</dialog>
 
@@ -233,7 +290,13 @@
 	// dialog window variable to avoid to type it multiple times
 	var dialog = document.querySelector('#dialog');
 
-	localStorage.setItem('need_transcript', 'false');	//TODO: delete this line: debug mode
+	// Dialog print window to avoid to type it multiple times
+	var dialog_print = document.querySelector('#dialog_print');
+
+	// Dialog print button to show the dialog print window
+	var showDialogPrintButton = document.querySelector('#print_button');
+
+	//localStorage.setItem('need_transcript', 'false');	//TODO: delete this line: debug mode
 	
 	//Start with indication to know how to use the program
 	showInfo('info_start');
@@ -251,6 +314,8 @@
 		var recognition = new webkitSpeechRecognition();
 		recognition.continuous = true;
 		recognition.interimResults = true;
+		var hist = '';		//Contient l'historique total de la conversation
+		var hist_mem = '';	//Variable utile lorsque qu'on clean la fenêtre de conversation
 
 
 		//The start event is fired when the recognition service has begun to listen to the audio with the intention of recognizing.
@@ -335,12 +400,20 @@
 			}
 			//console.log(event);
 			final_transcript = capitalize(final_transcript);
-
+			
 			final_span.innerHTML = final_transcript_save + linebreak(final_transcript);
 
 			interim_span.innerHTML = linebreak(interim_transcript);
 
+			//Local storage update for the windows sync
 			populateStorage();
+
+			//History update
+			console.log("final span");
+			console.log(final_span.innerHTML);
+			hist = hist_mem + final_span.innerHTML;
+			console.log("hist: "+ hist);
+
 			/*
 			if (final_transcript || interim_transcript) {
 			  	showButtons('inline-block');
@@ -432,6 +505,7 @@
 	 * Clear the content of the window when the clear button is pressed
 	 */
 	function clearButton () {
+		hist_mem = hist + '<p></p>';
 		final_span.innerHTML = '';
 		interim_span.innerHTML = '';
 		final_transcript = '';
@@ -462,6 +536,10 @@
 		start_timestamp = event.timeStamp;
 	}
 
+	//
+	//Dialog to inform the host that someone need help
+	//
+	
 	//Event listener to know when an user need a retranscription
 	window.addEventListener('storage', function(e) { 
 		console.log(e);
@@ -479,6 +557,34 @@
     	dialog.close();
       	document.getElementById('dictation_card').style.display = "flex";
     });
+
+
+
+
+    //
+	//Print Dialog
+	//
+
+    //Event listener to know when an user need a retranscription
+	showDialogPrintButton.addEventListener('click', function() {
+		hist = hist_mem + final_span.innerHTML;
+		console.log("hist: "+ hist);
+		document.getElementById("dialog_content").innerHTML = hist;
+      	dialog_print.showModal();
+    });
+
+	//Manage the dialog window
+    if (!dialog_print.showModal) {
+      	dialogPolyfill.registerDialog(dialog_print);
+    }
+    dialog_print.querySelector('.close').addEventListener('click', function() {
+    	dialog_print.close();
+    });
+    dialog_print.querySelector('.print').addEventListener('click', function() {
+    	window.print();
+    	dialog_print.close();
+    });
+
 
 </script>
 

@@ -181,9 +181,9 @@
 </body>
 
 <script type="text/javascript">
-	needTranscript();	//Debug mode TODO: remove this line
+	//needTranscript();	//Debug mode TODO: remove this line
 
-	//localStorage.setItem('need_transcript', 'false');	//Debug mode TODO: Uncomment this line
+	localStorage.setItem('need_transcript', 'false');	//Debug mode TODO: Uncomment this line
 
 	//Listen event storage to get the data
 	window.addEventListener('storage', function(e) { 
@@ -216,7 +216,7 @@
 	 * If the user click on the button, he request an help and the host will be notified
 	 */
 	function needTranscript() {
-		localStorage.setItem('need_transcript', 'false'); //Debug mode TODO: remove this line
+		//localStorage.setItem('need_transcript', 'false'); //Debug mode TODO: remove this line
 		localStorage.setItem('need_transcript', 'true');
 		document.getElementById('transcription_card').style.display = "flex";
 		document.getElementById('need_transcript').style.display = "none";
