@@ -3,11 +3,10 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>Web Speech API Demo</title>
+	<title>Client side</title>
 	<script defer src="https://code.getmdl.io/1.1.0/material.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-
 
 	<style>
 		body {
@@ -94,6 +93,8 @@
 			word-wrap: break-word;
 			font-size: 26px; 
 			line-height: 31px;
+			height: 200px;
+    		overflow-y: scroll;
 		}
 
 		#start_button {
@@ -153,6 +154,11 @@
     		margin-bottom: 20px;
     	}
 
+    	h1 {
+    		margin: 10px 0;
+    		font-size: 35px;
+    	}
+
 	</style>
 
 	<link rel="stylesheet" href="https://code.getmdl.io/1.1.0/material.blue_grey-indigo.min.css" />
@@ -188,13 +194,6 @@
 	  
 	</div>
 
-	<!--
-	<div id="results">
-	  <span id="final_span" class="final"></span>
-	  <span id="interim_span" class="interim"></span>
-	  <p>
-	</div>
-	-->
 
 </body>
 
@@ -208,10 +207,18 @@
 		console.log(e);
 		if (e.key == 'interim') {
 			document.getElementById('interim_span').innerHTML = e.newValue;
+			//scrollToBottom("results");
+			$('#results').stop().animate({
+			  	scrollTop: $('#results')[0].scrollHeight
+			}, 800);
 		};
 		
 		if (e.key == 'final') {
 			document.getElementById('final_span').innerHTML = e.newValue;
+			//scrollToBottom("results");
+			$('#results').stop().animate({
+			  	scrollTop: $('#results')[0].scrollHeight
+			}, 800);
 		};
 
 	});
@@ -247,6 +254,14 @@
 		var false_word = {text:this.innerHTML, span_id:this.id};
 		localStorage.setItem('need_correction', JSON.stringify(false_word));
 	});
+
+	function scrollToBottom(id){
+		$('#'+results).stop().animate({
+			  scrollTop: $('#'+results)[0].scrollHeight
+			}, 800);
+	}
+
+
 
 </script>
 
