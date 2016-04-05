@@ -148,6 +148,10 @@
     		width: 100%;
     	}
 
+    	.red {
+    		color: red;
+    	}
+
     	/*Media queries for history printing*/
     	@media print {
 			body * {
@@ -172,6 +176,7 @@
 		  	button {
 				visibility: hidden !important;		  	
 			}
+
 		}
 	</style>
 
@@ -180,26 +185,26 @@
 
 
 <body>
-	<h1 class="center" id="headline">Web Speech API Demonstration</h1>
+	<h1 class="center" id="headline">Outil de retranscription de texte</h1>
 
 	<div id="info">
-		<p id="info_start">Click on the microphone icon and begin speaking.</p>
+		<p id="info_start">Cliquez sur le bouton "Start" et commencez à parler.</p>
 
-		<p id="info_speak_now">Speak now.</p>
+		<p id="info_speak_now">Parlez maintenant.</p>
 
-		<p id="info_no_speech">No speech was detected. You may need to adjust your <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892"> microphone settings</a>.</p>
+		<p id="info_no_speech">Aucun son n'as été detecté. Vous devez peut être modifier les <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">paramètres de votre micro</a>.</p>
 
 		<p id="info_no_microphone" style="display:none">
-			No microphone was found. Ensure that a microphone is installed and that <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892"> microphone settings</a> are configured correctly.
+			Aucun micro n'as été trouvé. Assurez vous que le micro est bien installé et que <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892"> les paramètres du micro</a> sont configurés correctement.
 		</p>
 
-		<p id="info_allow">Click the "Allow" button above to enable your microphone.</p>
+		<p id="info_allow">Cliquez sur le bouton "Autoriser" ci-dessus pour activer votre micro.</p>
 
-		<p id="info_denied">Permission to use microphone was denied.</p>
+		<p id="info_denied">L'autorisation d'utiliser le micro a été refusée.</p>
 
-		<p id="info_blocked">Permission to use microphone is blocked. To change, go to chrome://settings/contentExceptions#media-stream</p>
+		<p id="info_blocked">L'autorisation d'utiliser le micro a été bloquée. Pour la débloqué, rendez-vous sur chrome://settings/contentExceptions#media-stream</p>
 
-		<p id="info_upgrade">Web Speech API is not supported by this browser. Upgrade to <a href="//www.google.com/chrome">Chrome</a> version 25 or later.</p>
+		<p id="info_upgrade">La Web Speech API n'est pas supportée sur ce navigateur. Installez <a href="//www.google.com/chrome">Chrome</a> version 25 ou plus.</p>
 
 	</div>
 
@@ -222,7 +227,7 @@
 
 	  <div class="mdl-card__actions mdl-card--border">
 	    <div id="punctuationBar" class="center">
-			<p style="text-align:center;">Click or speak the following punctuation marks, to append to dictation results:</p>
+			<p style="text-align:center;">Cliquez sur un des caractères de ponctuation suivant pour l'ajouter à la restranscription</p>
 			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('.')" title="Click to insert" id="cell_period" style="font-size: 2em;vertical-align: top;">.</button>
 			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol(',')" title="Click to insert" id="cell_comma" style="font-size: 2em;vertical-align: top;">,</button>
 			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('?')" title="Click to insert" id="cell_question" style="font-size: 2em;vertical-align: top;">?</button>
@@ -234,13 +239,13 @@
 			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('<p></p>')" title="Click to insert" id="cell_paragraph" style="font-size: 2em;vertical-align: top;">&crarr;&crarr;</button>
 			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('(')" title="Click to insert" id="cell_open" style="font-size: 2em;vertical-align: top;">(</button>
 			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol(')')" title="Click to insert" id="cell_close" style="font-size: 2em;vertical-align: top;">)</button>
-			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('&#128515;')" title="Click to insert" id="cell_smiley" style="font-size: 2em;vertical-align: top;">&#128515;</button>
-			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('&#128542;')" title="Click to insert" id="cell_sad" style="font-size: 2em;vertical-align: top;">&#128542;</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('#')" title="Click to insert" id="cell_smiley" style="font-size: 2em;vertical-align: top;">#</button>
+			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="insertSymbol('@')" title="Click to insert" id="cell_sad" style="font-size: 2em;vertical-align: top;">@</button>
 		 </div> 
 
 	  </div>
 	  <div class="mdl-card__supporting-text" id="results">
-	    <span contenteditable="true" id="final_span" class="final" onkeyup="populateStorage()"></span>
+	    <span onDblClick="this.contentEditable=true;" onblur="this.contentEditable=false;" id="final_span" class="final" onkeyup="populateStorage()"></span>
 	  	<span id="interim_span" class="interim"></span>
 	  </div>
 	  <!-- <div class="mdl-card__actions mdl-card--border">
@@ -314,6 +319,7 @@
 
 		//init
 		var final_transcript = '';
+		var final_transcript_temp = '';
 		var final_transcript_save = '';
 		var recognizing = false;
 		var ignore_onend;
@@ -324,7 +330,7 @@
 		recognition.interimResults = true;
 		var hist = '';		//Contient l'historique total de la conversation
 		var hist_mem = '';	//Variable utile lorsque qu'on clean la fenêtre de conversation
-
+		var span_id = 1;	//This variable is used to set an id to each word generated by the API => Used for point out a mispelled word
 
 		//The start event is fired when the recognition service has begun to listen to the audio with the intention of recognizing.
 		recognition.onstart = function() {
@@ -399,16 +405,52 @@
 		//The result event is fired when the speech recognizer returns a result. The event must use the SpeechRecognitionEvent interface.
 		recognition.onresult = function(event) {
 			var interim_transcript = '';
+			final_transcript_temp = "";
 			for (var i = event.resultIndex; i < event.results.length; ++i) {
 				if (event.results[i].isFinal) {
-					final_transcript += event.results[i][0].transcript;
+					final_transcript_temp += event.results[i][0].transcript;
+
+					final_transcript_temp = capitalize(final_transcript_temp);
+
+					var array = final_transcript_temp.split(' ');
+					var array2 = [];
+
+					for (var i = 0; i < array.length; i++) {
+						array2[i] = "<span class=\'clickable\' id=\'span_" + span_id + "\'>" + array[i] + "</span>";
+						span_id += 1;
+					}
+
+					final_transcript_temp = "";
+					for (var i = 0; i < array2.length; i++) {
+						final_transcript_temp += array2[i] + " ";
+					}
+
+
 				} else {
 					interim_transcript += event.results[i][0].transcript;
 					console.log(interim_transcript);
 				}
 			}
+
+			console.log("final_transcript_temp "+final_transcript_temp);
+			final_transcript += final_transcript_temp;
+			final_transcript_temp = "";
+
 			//console.log(event);
-			final_transcript = capitalize(final_transcript);
+			//final_transcript = capitalize(final_transcript);
+
+			// var array = final_transcript.split(' ');
+			// var array2 = [];
+
+			// for (var i = 0; i < array.length; i++) {
+			// 	array2[i] = "<span id=\'" + span_id + "\'>" + array[i] + "</span>";
+			// 	span_id += 1; 
+			// }
+
+			// final_transcript = "";
+			// for (var i = 0; i < array2.length; i++) {
+			// 	final_transcript += array2[i] + " ";
+			// }
 			
 			final_span.innerHTML = final_transcript_save + linebreak(final_transcript);
 
@@ -513,13 +555,14 @@
 	/**
 	 * Clear the content of the window when the clear button is pressed
 	 */
-	function clearButton () {
+	function clearButton() {
 		hist_mem = hist + '<p></p>';
 		final_span.innerHTML = '';
 		interim_span.innerHTML = '';
 		final_transcript = '';
 		interim_transcript = '';
 		final_transcript_save = '';
+		final_transcript_temp = "";
 	}
 
 	/**
@@ -545,6 +588,19 @@
 		start_timestamp = event.timeStamp;
 	}
 
+	/**
+	 * Handler to inform the "client" that a mispelled word has been corrected (red to black color font)
+	 */
+
+	$(document).on('dblclick','.red',function() {
+		console.log(this);
+		//remove the red class (no more a mispelled word because the host is currently correcting it)
+		document.getElementById(this.id).className = "clickable";
+		//Sync display between the two windows
+		populateStorage();
+	});
+
+
 	//
 	//Dialog to inform the host that someone need help
 	//
@@ -557,15 +613,25 @@
 			dialog.showModal();
 			localStorage.setItem('need_transcript', 'false');
 		};
+		//Handler for when a word need to be corrected
 		if (e.key == 'need_correction') {
-			//alert("Un client souhaite disposer de l'aide pour les malentendants");
 			'use strict';
+			//console.log(e);
+			// Retrieve the object from storage
+			var retrievedObject = JSON.parse(e.newValue);
+			//Show the mispelled word => red it
+			document.getElementById(retrievedObject.span_id).className += " red";
+			//Display a snackbar with relevant information (which word is mispelled)
 		    var data = {
-		      message: 'Le mot \"'+ e.newValue + '\" à besoin d\'être corrigé',
+		      message: 'Le mot \"'+ retrievedObject.text + '\" à besoin d\'être corrigé',
 		      timeout: 5000
 		    };
+		    //Constructor for the snackbar
 		    snackbarContainer.MaterialSnackbar.showSnackbar(data);
+		    //Remove the item from the localstorage
 		    localStorage.removeItem('need_correction');
+		    //Sync display between the two windows
+		    populateStorage();
 		};
 	});
 

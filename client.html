@@ -140,6 +140,10 @@
 		    height: 50px;
 		}
 
+		.red {
+    		color: red;
+    	}
+
 	</style>
 
 	<link rel="stylesheet" href="https://code.getmdl.io/1.1.0/material.blue_grey-indigo.min.css" />
@@ -150,15 +154,15 @@
 	<h1 class="center" id="headline">Retranscription du texte dicté par l'employé</h1>
 
 	<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect center" id="need_transcript" onclick="needTranscript()">
-		Cliquez sur ce bouton si vous avez besoin d'une retranscription ?
+		Voulez-vous utilisez la retranscription vocale ?
 	</button>
 	<div class="demo-card-wide mdl-card mdl-shadow--2dp" id="transcription_card" style="display:none">
 	  <div class="mdl-card__title">
 	    <h2 class="mdl-card__title-text">Speech recognition results</h2>
 	  </div>
 	  <div class="mdl-card__supporting-text" id="results">
-	    <span id="final_span" class="final clickable"></span>
-	  	<span id="interim_span" class="interim"></span>
+	    <div id="final_span" class="final"></div>
+	  	<div id="interim_span" class="interim"></div>
 	  </div>
 
 	  <div class="mdl-card__actions mdl-card--border">
@@ -223,23 +227,13 @@
 		document.getElementById('need_transcript').style.display = "none";
 	}
 
-
-	$(".clickable").click(function(e){
-		var s = window.getSelection();
-        s.modify('extend','backward','word');        
-        var b = s.toString();
-        console.log(s);
-
-        s.modify('extend','forward','word');
-        var a = s.toString();
-        console.log(s);
-        s.modify('move','forward','character');
-        //alert(b+a);
-		//alert(str);
-		console.log(b+a);
-		localStorage.setItem('need_correction', (b+a));
+	//When the "client" on a mispelled word, we send it to the host to warn him that this word is mispell
+	$(document).on('click','.clickable',function() {
+		//console.log("this.text: "+this.innerHTML);
+		//console.log("this.id: "+this.id);
+		var false_word = {text:this.innerHTML, span_id:this.id};
+		localStorage.setItem('need_correction', JSON.stringify(false_word));
 	});
-
 
 </script>
 
