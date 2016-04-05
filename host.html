@@ -8,6 +8,9 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
 
 	<style>
 		body {
@@ -94,7 +97,7 @@
 
 		}
 
-		#start_button, #clear_button {
+		#start_button, #clear_button, #print_button {
 			border: 0;
 			background-color:transparent;
 			padding: 0;
@@ -144,12 +147,24 @@
     		width: 70%;
     	}
 
+    	#dialog_treeview {
+    		width: 70%;
+    	}
+
     	#dialog_print_textfield {
     		width: 100%;
     	}
 
     	.red {
     		color: red;
+    	}
+
+    	#snackbar-correction {
+    		left: 35%;
+    	}
+
+    	#dictation_card {
+    		margin-bottom: 20px;
     	}
 
     	/*Media queries for history printing*/
@@ -213,7 +228,7 @@
 	    <h2 class="mdl-card__title-text">Speech recognition results</h2>
 	  </div>
 
-	  <div class="mdl-card__actions mdl-card--border">
+	  <div class="mdl-card__actions">
 	  	<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="start_button" onclick="startButton(event)">
 			Start
 		</button>
@@ -221,8 +236,16 @@
 			Clear
 		</button>
 	    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="print_button" onclick="">
-			Print the discussion
+			Imprimer
 		</button>
+		<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="treeview_button" onclick="">
+			Inserer un élément
+		</button>
+
+		<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="countdown" onclick="">
+			01:00
+		</button>
+
 	  </div>
 
 	  <div class="mdl-card__actions mdl-card--border">
@@ -253,6 +276,7 @@
 	  </div> -->
 	</div>
 
+	<!-- Dialog window that prevent the host that somebody need the restranscription service -->
 	<dialog id="dialog" class="mdl-dialog">
 	  	<h3 class="mdl-dialog__title">Demande d'aide</h3>
 	  	<div class="mdl-dialog__content">
@@ -281,6 +305,20 @@
 		</div>
 	</dialog>
 
+
+	<!-- Treeview Dialog -->
+	<dialog id="dialog_treeview" class="mdl-dialog">
+	  	<h3 class="mdl-dialog__title">Choisisez un élément à ajouter</h3>
+	  	<div id="jstree_demo_div">
+
+	  	</div>
+	  	<div class="mdl-dialog__actions">
+	    	<button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect insert">Inserer l'élément</button>
+	    	<button type="button" class="mdl-button close mdl-js-button mdl-button--raised mdl-js-ripple-effect">Annuler</button>
+		</div>
+	</dialog>
+
+
 	<div id="snackbar-correction" class="mdl-js-snackbar mdl-snackbar">
   		<div class="mdl-snackbar__text"></div>
   		<button class="mdl-snackbar__action" type="button"></button>
@@ -303,11 +341,65 @@
 	// Dialog print window to avoid to type it multiple times
 	var dialog_print = document.querySelector('#dialog_print');
 
+	// Dialog treeview window to avoid to type it multiple times
+	var dialog_treeview = document.querySelector('#dialog_treeview');
+
 	// Dialog print button to show the dialog print window
 	var showDialogPrintButton = document.querySelector('#print_button');
 
+	// Dialog treeview button to show the dialog treeview window
+	var showDialogTreeviewButton = document.querySelector('#treeview_button');
+
 	//Snackbar print when a word need a correction
 	var snackbarContainer = document.querySelector('#snackbar-correction');
+
+	//Contain the currently selected node maggle!
+	var selected_node = "";
+
+	countdown = document.querySelector('#countdown');
+	var counter; //= setInterval(function () {console.log("init counter")}, 1000);
+	var timer = 60;// = duration, minutes, seconds;
+	var minutes;
+	var seconds;
+
+	$(function () { $('#jstree_demo_div').jstree({ 'core' : {
+		'data' : [
+			'Noms de professeur',
+			{
+				'text' : 'Fillières',
+				'state' : {
+					'opened' : true,
+					'selected' : true
+				},
+				'children' : [
+					{
+						'text' : 'Arts, Lettres, Langues',
+						'children' : [
+							'Licence Arts du spectacle',
+							'Licence Droit',
+							'Licence Information-Communication',
+							'Licence Langues étrangères appliquées (LEA)',
+							'Licence Langues littératures civilisations étrangères et régionales (LLCER)',
+							'Licence Lettres',
+							'Licence Musicologie'
+						]
+					},
+					{
+						'text' : 'Droit, Economie, Gestion',
+						'children' : [
+							'DUT Carrières juridiques (CJ)',
+							'DUT Gestion des entreprises et des administrations (GEA)',
+							'DUT Gestion des entreprises et des administrations (GEA) / Valence',
+							'DUT Gestion des entreprises et des administrations (GEA) / Vienne',
+							'DUT Technique de commercialisation (TC)',
+							'DUT Techniques de commercialisation (TC) / Valence'
+						]
+					}
+				]
+			}
+			]
+		} });
+	});
 
 	//localStorage.setItem('need_transcript', 'false');	//TODO: delete this line: debug mode
 	
@@ -321,6 +413,8 @@
 		var final_transcript = '';
 		var final_transcript_temp = '';
 		var final_transcript_save = '';
+		var intentionalPause=true;
+		var searchFlag = false;
 		var recognizing = false;
 		var ignore_onend;
 		var start_timestamp;
@@ -335,9 +429,11 @@
 		//The start event is fired when the recognition service has begun to listen to the audio with the intention of recognizing.
 		recognition.onstart = function() {
 		    recognizing = true;
+		    startTimer(59, countdown);
 		    showInfo('info_speak_now');
 		    //start_img.src = 'mic-animate.gif';
 		    start_button.innerHTML = 'Stop';
+		    final_transcript_temp = '';
 		    final_transcript = final_transcript_save;
 		    final_transcript_save = '';
 		};
@@ -365,6 +461,7 @@
 			  	}
 			  	ignore_onend = true;
 			}
+			//clearInterval(counter); 
 			
 		};
 
@@ -376,6 +473,7 @@
 		    }
 		    //start_img.src = 'mic.gif';
 		    start_button.innerHTML = 'Start';
+		    //clearInterval(counter); 
 		    
 		    if (!final_transcript) {
 		     	showInfo('info_start');
@@ -386,6 +484,7 @@
 		    
 		    final_transcript_save = final_span.innerHTML + ' ';
 		    console.log('final_transcript_save: ' + final_transcript_save);
+			final_transcript_temp = '';
 		    /*
 		    if (window.getSelection) {
 		      	window.getSelection().removeAllRanges();
@@ -571,10 +670,13 @@
 	function startButton(event) {
 		if (recognizing) {
 			recognition.stop();
+			//clearInterval(counter);
+			resetTimer("01:00", countdown);
 			return;
 		}
 
 		final_transcript = '';
+		final_transcript_temp = '';
 		//recognition.lang = select_dialect.value;
 		recognition.lang = 'fr-FR';
 		recognition.start();
@@ -659,7 +761,7 @@
       	dialog_print.showModal();
     });
 
-	//Manage the dialog window
+	//Manage the print dialog window
     if (!dialog_print.showModal) {
       	dialogPolyfill.registerDialog(dialog_print);
     }
@@ -670,6 +772,67 @@
     	window.print();
     	dialog_print.close();
     });
+
+     //
+	//Treeview Dialog
+	//
+
+    //Event listener to know when an user need a retranscription
+	showDialogTreeviewButton.addEventListener('click', function() {
+		dialog_treeview.showModal();
+    });
+
+	//Manage the treeview dialog window
+    if (!dialog_treeview.showModal) {
+      	dialogPolyfill.registerDialog(dialog_treeview);
+    }
+    dialog_treeview.querySelector('.close').addEventListener('click', function() {
+    	dialog_treeview.close();
+    });
+    dialog_treeview.querySelector('.insert').addEventListener('click', function() {
+    	insertSymbol(" "+selected_node);
+    	dialog_treeview.close();
+    });
+
+    //When the user select a new node a the tree view, we update the selected_node variable
+	$('#jstree_demo_div').on("changed.jstree", function (e, data) {
+			selected_node = data.instance.get_node(data.selected).text;
+	});
+
+    /**
+     * This function start a countdown timer of "duration" seconds and display it on "display"
+     * @param  {integer} duration [description]
+     * @param  {html element} display  [description]
+     */
+    function startTimer(duration, display) {
+	    timer = duration, minutes, seconds;
+    	counter = setInterval(function () {
+	        minutes = parseInt(timer / 60, 10)
+	        seconds = parseInt(timer % 60, 10);
+
+	        minutes = minutes < 10 ? "0" + minutes : minutes;
+	        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+	        display.textContent = minutes + ":" + seconds;
+
+	        if (--timer < 0) {
+	            clearInterval(counter); 
+	        }
+	    }, 1000);
+	}
+
+	/**
+	 * Reset the timer a set the content of the display "display" at "duration"
+	 * @param  {string} duration [description]
+	 * @param  {html element} display  [description]
+	 * @return {[type]}          [description]
+	 */
+	function resetTimer(duration, display)
+	{
+	    clearInterval(counter);
+		display.textContent = duration;	    
+	    console.log("resetTimer DONE");  
+	}
 
 
 </script>

@@ -133,6 +133,11 @@
 			color: #fff;
 		}
 
+		.mdl-card__supporting-text{
+			border-top: 1px solid rgba(0,0,0,.1);
+    		width: unset !important;
+    	}
+
 		#need_transcript {
 			display: block;
 		    margin: auto;
@@ -142,6 +147,10 @@
 
 		.red {
     		color: red;
+    	}
+
+    	#transcription_card {
+    		margin-bottom: 20px;
     	}
 
 	</style>
@@ -160,12 +169,7 @@
 	  <div class="mdl-card__title">
 	    <h2 class="mdl-card__title-text">Speech recognition results</h2>
 	  </div>
-	  <div class="mdl-card__supporting-text" id="results">
-	    <div id="final_span" class="final"></div>
-	  	<div id="interim_span" class="interim"></div>
-	  </div>
-
-	  <div class="mdl-card__actions mdl-card--border">
+	  <div class="mdl-card__actions">
 	    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" id="zoom_button" onclick="zoom(2)">
 			Zoom
 		</button>
@@ -173,6 +177,15 @@
 			DeZoom
 		</button>
 	  </div>
+	  <div style="text-align:center;" class="mdl-card__actions mdl-card--border">
+			N'hésitez pas à signaler un mot incorrect ou non compris en cliquant dessus
+	  </div>
+	  <div class="mdl-card__supporting-text mdl-card--border" id="results">
+	    <div id="final_span" class="final"></div>
+	  	<div id="interim_span" class="interim"></div>
+	  </div>
+
+	  
 	</div>
 
 	<!--
